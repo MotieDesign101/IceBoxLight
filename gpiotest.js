@@ -68,23 +68,27 @@ function sendUdpMulticast(on) {
 
 function buzz(on, i) {
   console.log("INTERAFACES:" + networkinterfaces.length);
-  var dgramServer = dgram.createSocket('udp6');
   var message = createMessage(on);
   if (i < networkinterfaces.length) {
-    sendMessage(dgramServer, message, networkinterfaces[i], function() {
+    sendMessage(message, networkinterfaces[i], function() {
       buzz(on, i + 1);
     });
   } else {
-    dgramServer.close();
+
   }
 }
 
-function sendMessage(dgramServer, message, networkinterface, callback) {
-  dgramServer.send(message, 0, message.length, 6006, 'FF02::6006%' + networkinterface, function(err, bytes) {
+function sendMessage(message, networkinterface, callback) {
+  console.log(networkinterface);
+  var dgramServer = dgram.createSocket('udp6');
+  var destination = 'FF02::6006%' + networkinterface;
+  console.log(destination);
+  dgramServer.send(message, 0, message.length, 6006, destination, function(err, bytes) {
     if (err) {
       console.log("err when sending send UDP Message");
     }
     callback();
+          dgramServer.close();
     console.log("server close");
   });
 }
@@ -94,7 +98,7 @@ function createMessage(on) {
   var dateString = date.getTime();
   var event = {
     eventtime: dateString,
-    kuelschranktueroffen: on
+    open: !on
   };
   var message = new Buffer(JSON.stringify(event));
   //var message = new Buffer("door");
